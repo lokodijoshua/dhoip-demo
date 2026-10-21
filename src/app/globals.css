@@ -1,0 +1,240 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-crimson: var(--crimson);
+  --color-crimson-foreground: var(--crimson-foreground);
+  --color-hairline: var(--hairline);
+  --color-slate: var(--slate);
+  --color-surface: var(--surface);
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 4px;
+}
+
+:root {
+  /* Clinical Chart palette — cool, restrained, medical */
+  --radius: 2px;
+  --background: #F2F4F3;          /* cool clinical paper */
+  --foreground: #0E1116;          /* ink — near-black with blue undertone */
+  --card: #FFFFFF;                /* pure white for elevated surfaces */
+  --card-foreground: #0E1116;
+  --popover: #FFFFFF;
+  --popover-foreground: #0E1116;
+  --primary: #1F4E4E;             /* deep medical teal */
+  --primary-foreground: #F2F4F3;
+  --secondary: #E8ECEB;           /* quiet surface tone */
+  --secondary-foreground: #0E1116;
+  --muted: #E8ECEB;
+  --muted-foreground: #5A6168;    /* slate — muted text */
+  --accent: #E8ECEB;
+  --accent-foreground: #0E1116;
+  --destructive: #C4452A;         /* crimson signal — used sparingly */
+  --border: #C9CFCE;              /* hairline — structural rules */
+  --input: #C9CFCE;
+  --ring: #1F4E4E;
+  --crimson: #C4452A;
+  --crimson-foreground: #FFFFFF;
+  --hairline: #C9CFCE;
+  --slate: #5A6168;
+  --surface: #E8ECEB;
+  /* Chart colors — derived from palette, kept restrained */
+  --chart-1: #1F4E4E;             /* teal */
+  --chart-2: #4A7A7A;             /* lighter teal */
+  --chart-3: #C4452A;             /* crimson (for critical/danger series) */
+  --chart-4: #8A9099;             /* slate */
+  --chart-5: #6B8E8E;             /* muted teal-green */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #0E1116;
+  --sidebar-primary: #1F4E4E;
+  --sidebar-primary-foreground: #F2F4F3;
+  --sidebar-accent: #E8ECEB;
+  --sidebar-accent-foreground: #0E1116;
+  --sidebar-border: #C9CFCE;
+  --sidebar-ring: #1F4E4E;
+}
+
+.dark {
+  --background: #0E1116;
+  --foreground: #F2F4F3;
+  --card: #161B22;
+  --card-foreground: #F2F4F3;
+  --popover: #161B22;
+  --popover-foreground: #F2F4F3;
+  --primary: #4A9E9E;
+  --primary-foreground: #0E1116;
+  --secondary: #1F2630;
+  --secondary-foreground: #F2F4F3;
+  --muted: #1F2630;
+  --muted-foreground: #8A9099;
+  --accent: #1F2630;
+  --accent-foreground: #F2F4F3;
+  --destructive: #E5573C;
+  --border: #2A323D;
+  --input: #2A323D;
+  --ring: #4A9E9E;
+  --crimson: #E5573C;
+  --crimson-foreground: #0E1116;
+  --hairline: #2A323D;
+  --slate: #8A9099;
+  --surface: #1F2630;
+  --chart-1: #4A9E9E;
+  --chart-2: #6BB5B5;
+  --chart-3: #E5573C;
+  --chart-4: #B5BAC4;
+  --chart-5: #8AB5B5;
+  --sidebar: #161B22;
+  --sidebar-foreground: #F2F4F3;
+  --sidebar-primary: #4A9E9E;
+  --sidebar-primary-foreground: #0E1116;
+  --sidebar-accent: #1F2630;
+  --sidebar-accent-foreground: #F2F4F3;
+  --sidebar-border: #2A323D;
+  --sidebar-ring: #4A9E9E;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "cv11", "tnum";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: #1F4E4E;
+    color: #F2F4F3;
+  }
+}
+
+/* Tabular figures for all numerical data */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  font-family: var(--font-geist-mono), monospace;
+}
+
+/* Hairline divider — the primary structural device */
+.hairline {
+  border-color: var(--hairline);
+}
+.hairline-t {
+  border-top: 1px solid var(--hairline);
+}
+.hairline-b {
+  border-bottom: 1px solid var(--hairline);
+}
+.hairline-r {
+  border-right: 1px solid var(--hairline);
+}
+.hairline-l {
+  border-left: 1px solid var(--hairline);
+}
+
+/* Custom scrollbar — minimal, clinical */
+.scroll-area-edit {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline) transparent;
+}
+.scroll-area-edit::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scroll-area-edit::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-area-edit::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+}
+.scroll-area-edit::-webkit-scrollbar-thumb:hover {
+  background: var(--slate);
+}
+
+/* Subtle entrance — single orchestrated moment, not per-section */
+@keyframes enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.enter {
+  animation: enter 0.3s ease-out;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .enter {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Print styles for receipts */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .receipt-print,
+  .receipt-print * {
+    visibility: visible;
+  }
+  .receipt-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 24px !important;
+  }
+  [data-radix-dialog-overlay] {
+    display: none !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page {
+    margin: 1.5cm;
+    size: A4;
+  }
+}

@@ -1,0 +1,226 @@
+// D-HOIP — Hospital Operating & Intelligence Platform
+// Relational schema (SQLite for demo; portable to PostgreSQL for production).
+// This schema mirrors the in-memory store used by the interactive demo and
+// serves as the production-ready relational contract for the platform.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============ Master records ============
+
+model Patient {
+  id             String   @id // D2C-000125 (human-readable, permanent)
+  firstName      String
+  lastName       String
+  dateOfBirth    DateTime
+  gender         String
+  phone          String
+  email          String?
+  address        String
+  city           String
+  state          String
+  nextOfKin      String
+  nextOfKinPhone String
+  bloodGroup     String?
+  genotype       String?
+  allergies      String   @default("[]") // JSON array
+  hmoId          String?
+  hmoRef         HMO?     @relation(fields: [hmoId], references: [id])
+  hmoPlan        String?
+  registeredAt   DateTime @default(now())
+  registeredBy   String   // staff id
+  alerts         String   @default("[]")
+  encounters     Encounter[]
+  invoices       Invoice[]
+  referrals      Referral[]
+
+  @@index([lastName])
+  @@index([phone])
+}
+
+model Staff {
+  id          String   @id // EMP-001
+  name        String
+  role        String   // director | doctor | admin | cashier | lab_tech | ...
+  title       String
+  department  String
+  avatarColor String
+  initials    String
+  active      Boolean  @default(true)
+  onDuty      Boolean  @default(false)
+  clockIn     String?
+  clockOut    String?
+  attendance  Attendance[]
+  encounters  Encounter[] @relation("DoctorEncounters")
+}
+
+model Department {
+  code     String @id // consultation | laboratory | radiology | maternity | surgery | eye
+  name     String
+  tagline  String
+  services Service[]
+}
+
+model Service {
+  id           String   @id // SVC-LAB-001
+  code         String   @unique
+  name         String
+  department   String
+  departmentRef Department? @relation(fields: [department], references: [code])
+  price        Int      // Naira
+  category     String
+  requiresAuth Boolean  @default(false)
+  duration     String?
+  requests     ServiceRequest[]
+}
+
+model HMO {
+  id               String    @id
+  name             String
+  plan             String
+  memberName       String
+  memberId         String
+  coveragePercent  Int
+  requiresPreAuth  Boolean   @default(false)
+  outstanding      Int       @default(0)
+  invoices         Invoice[]
+  patients         Patient[]
+}
+
+// ============ Encounters & Clinical Orders ============
+
+model Encounter {
+  id              String   @id // ENC-2026-0142
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  date            DateTime @default(now())
+  department      String
+  type            String   // outpatient | emergency | inpatient | follow-up
+  doctorId        String?
+  doctor          Staff?   @relation("DoctorEncounters", fields: [doctorId], references: [id])
+  chiefComplaint  String?
+  diagnosis       String?
+  status          String   @default("open") // open | closed
+  notes           String?
+  requests        ServiceRequest[]
+  invoices        Invoice[]
+
+  @@index([patientId])
+  @@index([date])
+}
+
+model ServiceRequest {
+  id              String   @id // REQ-001
+  encounterId     String
+  encounter       Encounter @relation(fields: [encounterId], references: [id])
+  patientId       String
+  serviceId       String
+  service         Service   @relation(fields: [serviceId], references: [id])
+  serviceName     String
+  department      String
+  requestedBy     String
+  requestedAt     DateTime @default(now())
+  status          String   @default("pending_billing")
+  priority        String   @default("routine")
+  clinicalNote    String?
+  assignedTo      String?
+  paymentStatus   String   @default("unbilled")
+  invoiceId       String?
+  invoice         Invoice? @relation(fields: [invoiceId], references: [id])
+  result          String?
+  completedAt     DateTime?
+  releasedAt      DateTime?
+
+  @@index([patientId])
+  @@index([department, status])
+}
+
+// ============ Billing & Finance ============
+
+model Invoice {
+  id              String   @id // INV-2026-0001
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  encounterId     String
+  encounter       Encounter @relation(fields: [encounterId], references: [id])
+  date            DateTime @default(now())
+  lines           String   // JSON array of {serviceId, serviceName, quantity, unitPrice, total}
+  subtotal        Int
+  discount        Int      @default(0)
+  total           Int
+  patientShare    Int
+  hmoShare        Int      @default(0)
+  amountPaid      Int      @default(0)
+  hmoAuthorized   Int      @default(0)
+  hmoReceived     Int      @default(0)
+  outstanding     Int
+  paymentMethod   String?
+  paymentRef      String?
+  paidAt          DateTime?
+  cashierId       String?
+  status          String   @default("unpaid")
+  hmoId           String?
+  hmo             HMO?     @relation(fields: [hmoId], references: [id])
+  relatedRequests String   @default("[]") // JSON array of request ids
+  requests        ServiceRequest[]
+
+  @@index([patientId])
+  @@index([status])
+}
+
+// ============ Referrals ============
+
+model Referral {
+  id               String   @id // REF-001
+  patientId        String
+  patient          Patient  @relation(fields: [patientId], references: [id])
+  type             String   // internal | incoming | outgoing
+  date             DateTime @default(now())
+  source           String
+  destination      String
+  reason           String
+  status           String   @default("pending")
+  commission       Int      @default(0)
+  commissionStatus String   @default("none")
+}
+
+// ============ Operations ============
+
+model Attendance {
+  id        String @id
+  staffId   String
+  staff     Staff  @relation(fields: [staffId], references: [id])
+  date      String
+  clockIn   String
+  clockOut  String?
+  location  String
+  device    String
+  status    String
+
+  @@index([staffId, date])
+}
+
+model Alert {
+  id          String   @id
+  severity    String
+  category    String
+  message     String
+  timestamp   DateTime @default(now())
+  acknowledged Boolean @default(false)
+}
+
+model AuditLog {
+  id        String   @id
+  timestamp DateTime @default(now())
+  actor     String
+  action    String
+  entity    String
+  entityId  String
+  details   String
+}
