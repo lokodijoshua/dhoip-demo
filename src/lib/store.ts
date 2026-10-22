@@ -733,21 +733,29 @@ export function useHydrated(): boolean {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // If already hydrated (e.g. fast nav), return immediately
-    if (useDHOIP.persist.hasHydrated()) {
-      setHydrated(true);
-      return;
-    }
+    // Kick off rehydration immediately
+    const rehydratePromise = useDHOIP.persist.rehydrate();
 
-    // Wait for rehydration to actually complete before showing UI
-    const unsub = useDHOIP.persist.onFinishHydration(() => {
+    // When rehydration completes, set hydrated = true
+    const finishUnsub = useDHOIP.persist.onFinishHydration(() => {
       setHydrated(true);
     });
 
-    // Kick off rehydration
-    useDHOIP.persist.rehydrate();
+    // Also handle the case where rehydrate() returns a Promise
+    if (rehydratePromise && typeof rehydratePromise.then === "function") {
+      Promise.resolve(rehydratePromise).then(() => {
+        setHydrated(true);
+      });
+    }
 
-    return () => unsub();
+    // If already hydrated (fast navigation), set immediately
+    if (useDHOIP.persist.hasHydrated()) {
+      setHydrated(true);
+    }
+
+    return () => {
+      finishUnsub();
+    };
   }, []);
   return hydrated;
 }
