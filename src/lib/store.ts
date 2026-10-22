@@ -731,16 +731,23 @@ import { useEffect, useState } from "react";
 export function useHydrated(): boolean {
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      // manually rehydrate the persisted store on mount
-      try {
-        useDHOIP.persist?.rehydrate();
-      } catch (e) {
-        console.warn("Rehydrate failed:", e);
-      }
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (typeof window === "undefined") return;
+
+    // If already hydrated (e.g. fast nav), return immediately
+    if (useDHOIP.persist.hasHydrated()) {
       setHydrated(true);
+      return;
     }
+
+    // Wait for rehydration to actually complete before showing UI
+    const unsub = useDHOIP.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
+
+    // Kick off rehydration
+    useDHOIP.persist.rehydrate();
+
+    return () => unsub();
   }, []);
   return hydrated;
 }
